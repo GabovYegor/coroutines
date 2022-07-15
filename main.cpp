@@ -4,6 +4,7 @@
 #include "co_return_value_coroutine.h"
 #include "resumable_coroutine.h"
 #include "generator.h"
+#include "generator_range.h"
 
 int main() {
     // 1.
@@ -36,6 +37,12 @@ int main() {
         std::cout << generator.current_value() << std::endl;
         generator.move_next();
         std::cout << generator.current_value() << std::endl;
+    }
+
+    // 5.
+    for(const auto i : generator_range::sequence(0, 10, 2))
+    {
+        std::cout << i << std::endl;
     }
     return 0;
 }
