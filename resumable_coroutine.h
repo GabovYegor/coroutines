@@ -2,7 +2,7 @@
 
 #include <coroutine>
 
-struct Resumable {
+struct resumable {
 
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
@@ -27,7 +27,7 @@ struct Resumable {
         }
     };
 
-    Resumable(coro_handle handle) : handle_{ handle } {}
+    resumable(coro_handle handle) : handle_{handle } {}
 
     bool resume() {
         if(!handle_.done())
@@ -35,7 +35,7 @@ struct Resumable {
         return !handle_.done();
     }
 
-    ~Resumable() {
+    ~resumable() {
         handle_.destroy();
     }
 

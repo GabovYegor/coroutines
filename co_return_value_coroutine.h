@@ -24,7 +24,6 @@ struct returnable_any {
 
         void unhandled_exception() {}
 
-    private:
         T value_to_return;
     };
 

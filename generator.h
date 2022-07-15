@@ -3,8 +3,7 @@
 #include <coroutine>
 
 template <class T>
-struct Generator {
-
+struct generator {
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
 
@@ -40,7 +39,7 @@ struct Generator {
         T data_ = {};
     };
 
-    Generator(coro_handle handle) : handle_{ handle } {}
+    generator(coro_handle handle) : handle_{handle } {}
 
     bool move_next() {
         if(!handle_.done())
@@ -52,7 +51,7 @@ struct Generator {
         return handle_.promise().get_data();
     }
 
-    ~Generator() {
+    ~generator() {
         handle_.destroy();
     }
 

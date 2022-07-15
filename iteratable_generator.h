@@ -3,16 +3,19 @@
 #include <coroutine>
 
 template <class T>
-struct Iterator {
-    Iterator() = default;
+struct iteratable_generator;
 
-    Iterator(Generator<T>* generator) : generator_ { generator } {}
+template <class T>
+struct iterator {
+    iterator() = default;
 
-    bool operator!=(const Iterator& other) {
+    iterator(iteratable_generator<T>* generator) : generator_ {generator } {}
+
+    bool operator!=(const iterator& other) {
         return generator_ != other.generator_;
     }
 
-    Iterator operator++() {
+    iterator operator++() {
         auto done = generator_->move_next();
         if(done)
             generator_ = nullptr;
@@ -24,11 +27,11 @@ struct Iterator {
     }
 
 private:
-    Generator<T> * generator_;
+    iteratable_generator<T> * generator_;
 };
 
 template <class T>
-struct IteratableGenerator {
+struct iteratable_generator {
 
     struct promise_type;
     using coro_handle = std::coroutine_handle<promise_type>;
@@ -65,14 +68,14 @@ struct IteratableGenerator {
         T data_ = {};
     };
 
-    IteratableGenerator(coro_handle handle) : handle_{ handle } {}
+    iteratable_generator(coro_handle handle) : handle_{handle } {}
 
     auto begin() {
-        return Iterator<T>{ this };
+        return iterator<T>(this);
     }
 
     auto end() {
-        return Iterator<T>{ nullptr };
+        return iterator<T>(nullptr);
     }
 
     bool move_next() {
@@ -85,7 +88,7 @@ struct IteratableGenerator {
         return handle_.promise().get_data();
     }
 
-    ~IteratableGenerator() {
+    ~iteratable_generator() {
         handle_.destroy();
     }
 
