@@ -2,16 +2,10 @@
 
 #include <coroutine>
 
-namespace simplest_coroutine {
-    struct Promise;
-
-    struct CoroReturnType {
-        using promise_type = Promise;
-    };
-
-    struct Promise {
+struct resumable_no_own {
+    struct promise_type {
         auto get_return_object() noexcept {
-            return CoroReturnType{};
+            return resumable_no_own{};
         }
 
         auto initial_suspend() noexcept {
@@ -26,8 +20,4 @@ namespace simplest_coroutine {
 
         void unhandled_exception() {}
     };
-
-    CoroReturnType coroutine() {
-        co_return;
-    }
-}
+};

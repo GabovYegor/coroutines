@@ -2,25 +2,10 @@
 
 #include <coroutine>
 
-namespace co_return_value_coroutine {
-    template <class T>
-    struct Promise;
 
-    template <class T>
-    struct CoroReturnType {
-        using promise_type = Promise<T>;
-
-        CoroReturnType(promise_type* promise) : _promise{ promise } {}
-
-        T get_value() {
-            return _promise->data;
-        }
-
-        promise_type* _promise;
-    };
-
-    template <class T>
-    struct Promise {
+template <class T>
+struct returnable_any {
+    struct promise_type {
         auto get_return_object() noexcept {
             return this;
         }
@@ -34,15 +19,21 @@ namespace co_return_value_coroutine {
         }
 
         void return_value(T&& value) {
-            data = std::forward<T>(value);
+            value_to_return = std::forward<T>(value);
         }
 
         void unhandled_exception() {}
 
-        T data;
+    private:
+        T value_to_return;
     };
 
-    CoroReturnType<int> coroutine() {
-        co_return 42;
+    returnable_any(promise_type* promise) : _promise{ promise } {}
+
+    T get_value() {
+        return _promise->value_to_return;
     }
-}
+
+    promise_type* _promise;
+};
+
