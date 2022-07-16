@@ -1,9 +1,9 @@
 #include <iostream>
 
 #include "resumable_no_own.h"
+#include "resumable_continuable_coroutine.h"
 #include "co_return_value_coroutine.h"
 #include "resumable_coroutine.h"
-#include "generator.h"
 #include "iteratable_generator.h"
 #include "event_awaiter.h"
 
@@ -22,6 +22,13 @@ resumable coro_suspend() {
     std::cout << "coro_suspend() point 1" << std::endl;
     co_await std::suspend_always{};
     std::cout << "coro_suspend() point 2" << std::endl;
+}
+
+resumable_continuable coro_suspend_continue() {
+    for(size_t i = 0; i < 10; ++i) {
+        std::cout << i << std::endl;
+        co_await std::suspend_always{};
+    }
 }
 
 iteratable_generator<size_t> sequence(size_t start, size_t finish, size_t step = 1) {
@@ -53,23 +60,43 @@ void producer() {
     g_event.set();
 }
 
+void print_example_header() {
+    static size_t example_counter = 1;
+    std::cout << std::endl
+              << "----------------- EXAMPLE " << example_counter++
+              << " -----------------" << std::endl;
+}
+
 int main() {
+    print_example_header(); // 1
     common_function();
 
+    print_example_header(); // 2
     auto sum_accessor = coro_sum(5, 9);
     std::cout << "sum_accessor.get_value() result: " << sum_accessor.get_value() << std::endl;
 
+    print_example_header(); // 3
     auto coro_suspend_accessor = coro_suspend();
     std::cout << "coro_suspend() is about to be resumed" << std::endl;
     coro_suspend_accessor.resume();
     std::cout << "coro_suspend() is about to be resumed again" << std::endl;
     coro_suspend_accessor.resume();
 
+    print_example_header(); // 4
+    auto coro_suspend_continue_accessor = coro_suspend_continue();
+    coro_suspend_continue_accessor.resume();
+    coro_suspend_continue_accessor.resume();
+    coro_suspend_continue_accessor.resume();
+    std::cout << "continue() was called" << std::endl;
+    coro_suspend_continue_accessor.continue_execution();
+
+    print_example_header(); // 5
     std::cout << "sequence result: ";
     for(auto i : sequence(10, 20, 2))
         std::cout << i << " ";
     std::cout << std::endl;
 
+    print_example_header(); // 6
     consumer1();
     consumer2();
     producer();
