@@ -1,4 +1,6 @@
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 #include "resumable_no_own.h"
 #include "resumable_continuable_coroutine.h"
@@ -6,6 +8,7 @@
 #include "resumable_coroutine.h"
 #include "iteratable_generator.h"
 #include "event_awaiter.h"
+#include "task_awaiter_t.h"
 
 // That's basically common function. Common functions are subset of coroutines
 resumable_no_own common_function() {
@@ -67,6 +70,18 @@ void print_example_header() {
               << " -----------------" << std::endl;
 }
 
+void print_hello() {
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::cout << "Hello world!" << std::endl;
+}
+
+resumable_no_own coro_task() {
+    std::cout << "coro_task() started" << std::endl;
+    auto result = co_await task_awaiter_t{ print_hello };
+    std::cout << "coro_task() result : " << result << std::endl;
+    std::cout << "coro_task() finished" << std::endl;
+}
+
 int main() {
     print_example_header(); // 1
     common_function();
@@ -101,5 +116,9 @@ int main() {
     consumer2();
     producer();
     producer();
+
+    print_example_header(); // 7
+
+    coro_task();
     return 0;
 }
