@@ -1,6 +1,13 @@
+// To avoid build issues on MSVC
+#define __cpp_lib_coroutine
+
 #include <iostream>
 #include <thread>
 #include <chrono>
+
+#include <cppcoro/task.hpp>
+#include <cppcoro/generator.hpp>
+#include <cppcoro/static_thread_pool.hpp>
 
 #include "resumable_no_own.h"
 #include "resumable_continuable_coroutine.h"
@@ -72,14 +79,34 @@ void print_example_header() {
 
 void print_hello() {
     std::this_thread::sleep_for(std::chrono::seconds(3));
-    std::cout << "Hello world!" << std::endl;
+    std::cout << "Hello coroutine" << std::endl;
 }
 
 resumable_no_own coro_task() {
     std::cout << "coro_task() started" << std::endl;
-    auto result = co_await task_awaiter_t{ print_hello };
-    std::cout << "coro_task() result : " << result << std::endl;
+    co_await task_awaiter_t{ [] { print_hello(); } };
     std::cout << "coro_task() finished" << std::endl;
+}
+
+cppcoro::generator<const std::uint64_t> fibonacci()
+{
+    std::uint64_t a = 0, b = 1;
+    while (true)
+    {
+        co_yield b;
+        auto tmp = a;
+        a = b;
+        b += tmp;
+    }
+}
+
+cppcoro::task<void> do_something_on_threadpool(cppcoro::static_thread_pool& tp)
+{
+    // First schedule the coroutine onto the threadpool.
+    co_await tp.schedule();
+
+    // When it resumes, this coroutine is now running on the threadpool.
+    print_hello();
 }
 
 int main() {
@@ -118,7 +145,22 @@ int main() {
     producer();
 
     print_example_header(); // 7
-
     coro_task();
+    std::cout << "Started complex task in main" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(4));
+    std::cout << "Finished complex task in main" << std::endl;
+
+    int counter = 0;
+    for (auto fib_val : fibonacci()) {
+        if(counter++ == 9) {
+            std::cout << fib_val;
+            break;
+        }
+    }
+
+    std::cout << "Started complex task_2 in main" << std::endl;
+    cppcoro::static_thread_pool tp;
+    auto do_smth_coro = do_something_on_threadpool(tp);
+    std::cout << "Finished complex task_2 in main" << std::endl;
     return 0;
 }
