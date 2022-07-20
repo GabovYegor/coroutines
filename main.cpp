@@ -8,6 +8,7 @@
 #include <cppcoro/task.hpp>
 #include <cppcoro/generator.hpp>
 #include <cppcoro/static_thread_pool.hpp>
+#include <cppcoro/sync_wait.hpp>
 
 #include "resumable_no_own.h"
 #include "resumable_continuable_coroutine.h"
@@ -150,17 +151,23 @@ int main() {
     std::this_thread::sleep_for(std::chrono::seconds(4));
     std::cout << "Finished complex task in main" << std::endl;
 
+    print_example_header(); // 8
     int counter = 0;
     for (auto fib_val : fibonacci()) {
         if(counter++ == 9) {
-            std::cout << fib_val;
+            std::cout << fib_val << std::endl;
             break;
         }
     }
 
-    std::cout << "Started complex task_2 in main" << std::endl;
+    print_example_header(); // 9
     cppcoro::static_thread_pool tp;
     auto do_smth_coro = do_something_on_threadpool(tp);
+
+    std::cout << "Started complex task_2 in main" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2));
     std::cout << "Finished complex task_2 in main" << std::endl;
+
+    cppcoro::sync_wait(do_smth_coro);
     return 0;
 }
