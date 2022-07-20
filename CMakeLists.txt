@@ -1,4 +1,5 @@
 # Build with -Dcppcoro_DIR=<cppcoro-build-dir> -Dcppcoro_LIB=<cpp-coro-lib.lib>
+# Example: -Dcppcoro_DIR=D:\\Programs\\cppcoro\\build\\cppcoro -Dcppcoro_LIB=D:\\Programs\\cppcoro\\cmake-build-release\\lib\\cppcoro.lib
 cmake_minimum_required(VERSION 3.16)
 project(coroutine_examples)
 
